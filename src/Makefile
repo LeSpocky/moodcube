@@ -8,17 +8,20 @@ F_CPU = 8000000
 CDEFS = -DF_CPU=$(F_CPU)
 CFLAGS = -mmcu=$(CPU_GCC) $(CDEFS) -Wall -Os
 
+PROGRAM = moodcube
+
 .phony: clean
 
-all: moodcube.hex
+all: $(PROGRAM).hex
 
-program: moodcube.hex
-	avrdude -c $(PROGRAMMER) -P usb -p $(CPU_DUDE) -U flash:w:moodcube.hex
+program: $(PROGRAM).hex
+	avrdude -c $(PROGRAMMER) -P usb -p $(CPU_DUDE) -U flash:w:$(PROGRAM).hex
 
 clean:
 	rm *.o *.elf *.hex
 
-moodcube.hex: moodcube.c
-	avr-gcc $(CFLAGS) -c moodcube.c -o moodcube.o
-	avr-gcc $(CFLAGS) moodcube.o -o moodcube.elf
-	avr-objcopy -R .eeprom -O ihex moodcube.elf moodcube.hex
+$(PROGRAM).hex: $(PROGRAM).c
+	avr-gcc $(CFLAGS) -c $(PROGRAM).c -o $(PROGRAM).o
+	avr-gcc $(CFLAGS) -c hsv2rgb.c -o hsv2rgb.o
+	avr-gcc $(CFLAGS) $(PROGRAM).o hsv2rgb.o -o $(PROGRAM).elf
+	avr-objcopy -R .eeprom -O ihex $(PROGRAM).elf $(PROGRAM).hex
