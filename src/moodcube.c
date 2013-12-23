@@ -5,6 +5,8 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#include "hsv2rgb.h"
+
 #define DIR_RD          (1 << DDB0)
 #define DIR_GN          (1 << DDB1)
 #define DIR_BL          (1 << DDB2)
@@ -86,17 +88,20 @@ ISR(ADC_vect) {
 }
 
 /*  main    */
-int main (void) {
-    uint8_t r, g, b;
+int main( void ) {
+    uint8_t h, s, v, r, g, b;
 
     init();
+    init8();
 
     /*  main loop   */
     while ( 1 ) {
         /*  seems like potis are wired inverted */
-        r = 255 - adc_result[0];
-        g = 255 - adc_result[1];
-        b = 255 - adc_result[2];
+        h = 255 - adc_result[0];
+        s = 255 - adc_result[1];
+        v = 255 - adc_result[2];
+
+        rgb( h, s, v, &r, &g, &b );
 
         comp_buf_R = pwmtable[r >> 3];
         comp_buf_G = pwmtable[g >> 3];
