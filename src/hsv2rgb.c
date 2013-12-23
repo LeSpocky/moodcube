@@ -35,7 +35,7 @@ uint8_t bsize_8[6];
 uint8_t f8( uint8_t h ) {
 	uint8_t hi = hi8( h );
 
-	return (uint16_t) (h - buckets_8[hi]) * 255 / (bsize_8[hi] - 1);
+	return (uint16_t) (h - buckets_8[hi]) * 255 / bsize_8[hi];
 }
 
 uint8_t hi8( uint8_t h ) {
@@ -60,6 +60,14 @@ uint8_t hi8( uint8_t h ) {
 
 uint8_t hi10( uint16_t h ) {
 	return -1;
+}
+
+void init8( void ) {
+    uint8_t lpc;
+    for ( lpc = 0; lpc < 5; lpc++ ) {
+        bsize_8[lpc] = buckets_8[lpc+1] - buckets_8[lpc] - 1;
+    }
+    bsize_8[5] = 256 - buckets_8[5] - 1;
 }
 
 uint8_t p8( uint8_t v, uint8_t s ) {

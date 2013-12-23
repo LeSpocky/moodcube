@@ -20,7 +20,7 @@ program: $(PROGRAM).hex
 clean:
 	rm *.o *.elf *.hex
 
-$(PROGRAM).hex: $(PROGRAM).c
+$(PROGRAM).hex: $(PROGRAM).c hsv2rgb.c
 	avr-gcc $(CFLAGS) -c $(PROGRAM).c -o $(PROGRAM).o
 	avr-gcc $(CFLAGS) -c hsv2rgb.c -o hsv2rgb.o
 	avr-gcc $(CFLAGS) $(PROGRAM).o hsv2rgb.o -o $(PROGRAM).elf
