@@ -3,7 +3,7 @@ PROGRAMMER = avrisp2
 CPU_GCC = attiny24
 CPU_DUDE = t24
 
-F_CPU = 8000000
+F_CPU = 1000000
 
 CDEFS = -DF_CPU=$(F_CPU)
 CFLAGS = -mmcu=$(CPU_GCC) $(CDEFS) -Wall -Os
