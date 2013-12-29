@@ -84,7 +84,7 @@ void rgb( uint8_t h, uint8_t s, uint8_t v,
 	uint8_t f, hi;
 
 	hi = hi8( h );
-	f = f8( hi );
+	f = f8( h );
 
 	switch ( hi ) {
 	case 0:
