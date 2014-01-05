@@ -5,6 +5,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#include "gamma.h"
 #include "hsv2rgb.h"
 
 #define DIR_RD          (1 << DDB0)
@@ -20,15 +21,10 @@
 #define MASK_ADTS       0x07    /*  ADTS2:ADTS0 in ADCSRB           */
 #define MASK_REFS       0xC0    /*  REFS1,REFS0 in ADMUX    */
 #define MASK_MUX        0x3F    /*  MUX5:MUX0 in ADMUX      */
-/*  constants   */
-const uint8_t pwmtable[32] = {
-    0, 1, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 10, 11, 13, 16, 19, 23, 27,
-    32, 38, 45, 54, 64, 76, 91, 108, 128, 152, 181, 215, 255
-};
 
 /*  globals */
 volatile uint8_t adc_result[3];
-volatile uint8_t comp_buf_R, comp_buf_G, comp_buf_B;
+volatile uint16_t comp_buf_R, comp_buf_G, comp_buf_B;
 
 /*  declaration */
 void init( void );
@@ -37,10 +33,10 @@ void init( void );
 ISR(TIM0_OVF_vect) {
     static uint8_t  pin_level = ( INVERTED_LED ? 0 : PORT_MASK );
     static uint8_t  led_status = 0;
-    static uint8_t  comp_R, comp_G, comp_B;
-    static uint8_t  soft_cnt_R = 0xFF;
-    static uint8_t  soft_cnt_G = 0xFF - 85;
-    static uint8_t  soft_cnt_B = 0xFF - 170;
+    static uint16_t comp_R, comp_G, comp_B;
+    static uint16_t soft_cnt_R = 0x01FF;
+    static uint16_t soft_cnt_G = 0x01FF - 170;
+    static uint16_t soft_cnt_B = 0x01FF - 340;
 
     /*  set new pin level first for low jitter and do calculation
      *  afterwards  */
@@ -48,15 +44,21 @@ ISR(TIM0_OVF_vect) {
 
     /*  increment counter and if overflow update compare value from
      *  main loop buffer and set LED on */
-    if ( ++soft_cnt_R == 0 ) {
+    soft_cnt_R++;
+    soft_cnt_R &= 0x01FF;
+    if ( soft_cnt_R == 0 ) {
         comp_R = comp_buf_R;
         led_status |= PORT_RD;
     }
-    if ( ++soft_cnt_G == 0 ) {
+    soft_cnt_G++;
+    soft_cnt_G &= 0x01FF;
+    if ( soft_cnt_G == 0 ) {
         comp_G = comp_buf_G;
         led_status |= PORT_GN;
     }
-    if ( ++soft_cnt_B == 0 ) {
+    soft_cnt_B++;
+    soft_cnt_B &= 0x01FF;
+    if ( soft_cnt_B == 0 ) {
         comp_B = comp_buf_B;
         led_status |= PORT_BL;
     }
@@ -103,9 +105,9 @@ int main( void ) {
 
         rgb( h, s, v, &r, &g, &b );
 
-        comp_buf_R = pwmtable[r >> 3];
-        comp_buf_G = pwmtable[g >> 3];
-        comp_buf_B = pwmtable[b >> 3];
+        comp_buf_R = pgm_read_word( &(gammatbl[r]) );
+        comp_buf_G = pgm_read_word( &(gammatbl[g]) );
+        comp_buf_B = pgm_read_word( &(gammatbl[b]) );
     }
 
     return 0;
